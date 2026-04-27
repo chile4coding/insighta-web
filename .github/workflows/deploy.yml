@@ -94,4 +94,4 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             sleep 10
-            curl -f http://127.0.0.1:3000 || exit 1
+            curl -f http://127.0.0.1:3001 || exit 1
