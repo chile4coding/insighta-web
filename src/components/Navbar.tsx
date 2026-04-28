@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import { logout } from "@/lib/api";
+import Image from "next/image";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -76,9 +77,17 @@ export default function Navbar() {
                   </span>
                 </div>
                 <Link
-                  href="/account"
+                  href="/dashboard/account"
                   className="ml-4 p-2 rounded-full hover:bg-gray-100">
-                  <User className="w-5 h-5 text-gray-500" />
+                  {user?.avatarUrl ? (
+                    <Image
+                      src={user.avatarUrl}
+                      alt="User avatar"
+                      className="w-5 h-5 rounded-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-5 h-5 text-gray-500" />
+                  )}
                 </Link>
 
                 <button

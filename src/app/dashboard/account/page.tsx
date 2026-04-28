@@ -1,11 +1,11 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { User, LogOut, Mail, User as UserIcon, Calendar } from 'lucide-react';
-import { logout } from '../../lib/api';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useAuth } from "../../../contexts/AuthContext";
+import { User, LogOut, Mail, User as UserIcon, Calendar } from "lucide-react";
+import { logout } from "../../../lib/api";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function AccountPage() {
   const { user, loading } = useAuth();
@@ -16,9 +16,9 @@ export default function AccountPage() {
     setIsLoggingOut(true);
     try {
       await logout();
-      router.push('/login');
+      router.push("/login");
     } catch (err) {
-      console.error('Logout failed:', err);
+      console.error("Logout failed:", err);
     } finally {
       setIsLoggingOut(false);
     }
@@ -33,13 +33,15 @@ export default function AccountPage() {
   }
 
   if (!user) {
-    router.push('/login');
+    router.push("/login");
     return null;
   }
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Account Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        Account Settings
+      </h1>
 
       <div className="max-w-2xl">
         {/* Profile Card */}
@@ -53,10 +55,20 @@ export default function AccountPage() {
           <div className="px-6 py-5">
             <div className="flex items-center mb-6">
               <div className="bg-blue-100 rounded-full p-3 mr-4">
-                <User className="w-8 h-8 text-blue-600" />
+                {user?.avatarUrl ? (
+                  <Image
+                    src={user.avatarUrl}
+                    alt="User avatar"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <User className="w-8 h-8 text-blue-600" />
+                )}
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-gray-900">{user.username}</h3>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {user.username}
+                </h3>
                 <p className="text-sm text-gray-500">{user.email}</p>
               </div>
             </div>
@@ -99,7 +111,7 @@ export default function AccountPage() {
               <div className="text-sm text-gray-900">
                 {user.lastLoginAt
                   ? new Date(user.lastLoginAt).toLocaleString()
-                  : 'N/A'}
+                  : "N/A"}
               </div>
             </div>
           </div>
@@ -108,19 +120,20 @@ export default function AccountPage() {
         {/* Status Card */}
         <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
           <div className="px-6 py-5 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Account Status</h2>
+            <h2 className="text-lg font-medium text-gray-900">
+              Account Status
+            </h2>
           </div>
           <div className="px-6 py-5">
             <div className="flex items-center">
               <span
                 className={`h-2 w-2 rounded-full mr-3 ${
-                  user.isActive ? 'bg-green-400' : 'bg-red-400'
-                }`}
-              ></span>
+                  user.isActive ? "bg-green-400" : "bg-red-400"
+                }`}></span>
               <span className="text-sm text-gray-600">
-                Account is{' '}
+                Account is{" "}
                 <span className="font-medium text-gray-900">
-                  {user.isActive ? 'active' : 'inactive'}
+                  {user.isActive ? "active" : "inactive"}
                 </span>
               </span>
             </div>
@@ -139,10 +152,9 @@ export default function AccountPage() {
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-            >
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50">
               <LogOut className="w-4 h-4 mr-2" />
-              {isLoggingOut ? 'Signing out...' : 'Sign Out'}
+              {isLoggingOut ? "Signing out..." : "Sign Out"}
             </button>
           </div>
         </div>

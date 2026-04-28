@@ -54,7 +54,7 @@ function getCsrfToken(): string | null {
   const decoded = decodeURIComponent(document.cookie);
   const ca = decoded.split(";");
   for (let i = 0; i < ca.length; i++) {
-    let c = ca[i].trim();
+    const c = ca[i].trim();
     if (c.indexOf(name) === 0) {
       return c.substring(name.length, c.length);
     }
