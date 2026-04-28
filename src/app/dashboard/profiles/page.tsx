@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { getProfiles, exportProfiles, createProfile } from "../../../lib/api";
+import {
+  getProfiles,
+  exportProfiles,
+  createProfile,
+  Profile,
+} from "../../../lib/api";
 import Link from "next/link";
 import {
   Search,
@@ -13,12 +18,13 @@ import {
   Users,
   UserPlus,
   X,
+  Eye,
 } from "lucide-react";
 import { COUNTRY_NAME_TO_ISO } from "@/lib/contry-iso";
 
 export default function ProfilesPage() {
   const { user, loading } = useAuth();
-  const [profiles, setProfiles] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -31,7 +37,7 @@ export default function ProfilesPage() {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-
+  const abortControllerRef = useRef<AbortController | null>(null);
   const [filters, setFilters] = useState({
     gender: "",
     country_id: "",
@@ -45,34 +51,117 @@ export default function ProfilesPage() {
 
   const isAdmin = user?.role === "admin";
 
-  const fetchProfiles = async (pageNum: number) => {
+  // Use refs to track state for effect dependencies
+  const paramsRef = useRef(filters);
+  const pageRef = useRef(page);
+
+  // Keep refs in sync with state (no setState calls, so no re-renders)
+  useEffect(() => {
+    paramsRef.current = filters;
+  }, [filters]);
+
+  useEffect(() => {
+    pageRef.current = page;
+  }, [page]);
+
+  const loadProfiles = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoadingData(true);
       const params = {
-        ...filters,
+        ...paramsRef.current,
         country_id:
-          COUNTRY_NAME_TO_ISO[filters.country_id.toLowerCase()] ||
-          filters.country_id,
-        page: pageNum,
+          COUNTRY_NAME_TO_ISO[paramsRef.current.country_id.toLowerCase()] ||
+          paramsRef.current.country_id,
+        page: pageRef.current,
       };
       const data = await getProfiles(params);
-      setProfiles(data.data);
-      setTotalPages(data.total_pages);
-      setTotalProfiles(data.total);
-      setPage(data.page);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message);
+      if (!signal?.aborted) {
+        setProfiles(data.data);
+        setTotalPages(data.total_pages);
+        setTotalProfiles(data.total);
+        setPage(data.page);
+        setError(null);
+      }
+    } catch (err) {
+      if (!signal?.aborted) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      }
     } finally {
-      setLoadingData(false);
+      if (!signal?.aborted) {
+        setLoadingData(false);
+      }
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (user) {
-      fetchProfiles(page);
+    if (!loading && user) {
+      abortControllerRef.current = new AbortController();
+      loadProfiles(abortControllerRef.current.signal);
+      return () => {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      };
     }
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loading]);
+
+  const handleCloseModal = useCallback(() => {
+    setShowCreateModal(false);
+    setCreateName("");
+    setCreateError(null);
+  }, []);
+
+  const handleFilterChange = useCallback((key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+  }, []);
+
+  const handleExport = useCallback(async () => {
+    try {
+      const blob = await exportProfiles(paramsRef.current);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `profiles_${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to export profiles",
+      );
+    }
+  }, []);
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      if (newPage >= 1 && newPage <= totalPages) {
+        setPage(newPage);
+        pageRef.current = newPage;
+        loadProfiles();
+      }
+    },
+    [totalPages, loadProfiles],
+  );
+
+  useEffect(() => {
+    if (!loading && user && profiles.length > 0) {
+      abortControllerRef.current = new AbortController();
+      loadProfiles(abortControllerRef.current.signal);
+      return () => {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, page, user, loading]);
 
   // Close modal on outside click
   useEffect(() => {
@@ -85,7 +174,7 @@ export default function ProfilesPage() {
       document.addEventListener("mousedown", handleOutsideClick);
     }
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [showCreateModal]);
+  }, [showCreateModal, handleCloseModal]);
 
   // Close modal on Escape key
   useEffect(() => {
@@ -96,13 +185,7 @@ export default function ProfilesPage() {
       document.addEventListener("keydown", handleEsc);
     }
     return () => document.removeEventListener("keydown", handleEsc);
-  }, [showCreateModal]);
-
-  const handleCloseModal = () => {
-    setShowCreateModal(false);
-    setCreateName("");
-    setCreateError(null);
-  };
+  }, [showCreateModal, handleCloseModal]);
 
   const handleCreateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,47 +197,17 @@ export default function ProfilesPage() {
       setCreating(true);
       setCreateError(null);
 
-      // Replace with your actual create profile API call
       await createProfile(createName.trim());
       handleCloseModal();
-      fetchProfiles(1);
-    } catch (err: any) {
-      setCreateError(err.message);
+      setPage(1);
+      pageRef.current = 1;
+      loadProfiles();
+    } catch (err) {
+      setCreateError(
+        err instanceof Error ? err.message : "Failed to create profile",
+      );
     } finally {
       setCreating(false);
-    }
-  };
-
-  const handleFilterChange = (key: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    fetchProfiles(1);
-  };
-
-  const handleExport = async () => {
-    try {
-      const blob = await exportProfiles(filters);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `profiles_${new Date().toISOString().split("T")[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setPage(newPage);
-      fetchProfiles(newPage);
     }
   };
 
@@ -197,7 +250,7 @@ export default function ProfilesPage() {
           )}
           <button
             onClick={handleExport}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center transition-colors">
+            className="px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center transition-colors">
             <Download className="w-4 h-4 mr-2" />
             Export CSV
           </button>
@@ -283,16 +336,24 @@ export default function ProfilesPage() {
               <option value="gender_probability">Gender Prob</option>
             </select>
             <button
+              type="button"
               onClick={() => {
-                const newOrder = filters.order === "asc" ? "desc" : "asc";
-                handleFilterChange("order", newOrder);
+                setFilters((prev) => ({
+                  ...prev,
+                  order: prev.order === "asc" ? "desc" : "asc",
+                }));
               }}
               className="px-3 py-1 border border-gray-300 rounded-md text-sm flex items-center">
               <ArrowUpDown className="w-4 h-4 mr-1" />
               {filters.order === "asc" ? "Asc" : "Desc"}
             </button>
             <button
-              onClick={handleSubmit}
+              type="button"
+              onClick={() => {
+                setPage(1);
+                pageRef.current = 1;
+                loadProfiles();
+              }}
               className="px-4 py-1 bg-blue-600 text-white rounded-md text-sm flex items-center">
               <Search className="w-4 h-4 mr-1" />
               Apply
@@ -340,6 +401,9 @@ export default function ProfilesPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Created
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -352,21 +416,29 @@ export default function ProfilesPage() {
                         {profile.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                        {profile.gender}
+                        {profile.gender || "Not specified"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {profile.age}
+                        {profile.age !== null ? profile.age : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                          {profile.age_group}
+                          {profile.age_group || "Unclassified"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {profile.country_id}
+                        {profile.country_name || profile.country_id || "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(profile.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <Link
+                          href={`/dashboard/profiles/${profile.id}`}
+                          className="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors">
+                          <Eye className="w-3 h-3 mr-1" />
+                          View
+                        </Link>
                       </td>
                     </tr>
                   ))}

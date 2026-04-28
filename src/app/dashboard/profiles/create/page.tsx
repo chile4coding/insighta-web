@@ -36,8 +36,8 @@ export default function CreateProfilePage() {
       setError(null);
       const response = await createProfile(name.trim());
       setCreatedProfile(response);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err?.message : "failed to load profiles");
     } finally {
       setCreating(false);
     }
@@ -60,7 +60,7 @@ export default function CreateProfilePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <p className="text-gray-500 mb-4">
-          You don't have permission to access this page.
+          You don&apos;t have permission to access this page.
         </p>
         <button
           onClick={() => router.push("/dashboard/profiles")}

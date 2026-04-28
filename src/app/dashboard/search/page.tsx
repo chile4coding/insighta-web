@@ -4,7 +4,14 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { searchProfiles, PaginatedResponse, Profile } from "../../../lib/api";
 import Link from "next/link";
-import { Search, Users, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  Search,
+  Users,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Eye,
+} from "lucide-react";
 
 export default function SearchPage() {
   const { user, loading } = useAuth();
@@ -41,8 +48,8 @@ export default function SearchPage() {
         total_pages: data.total_pages,
         links: data.links,
       });
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Search failed");
       setResults([]);
       setPagination(null);
     } finally {
@@ -122,14 +129,14 @@ export default function SearchPage() {
             <strong>Try these examples:</strong>
           </p>
           <ul className="list-disc list-inside mt-1 space-y-1">
-            <li>"young males"</li>
-            <li>"females above 30"</li>
-            <li>"people from angola"</li>
-            <li>"adult males from kenya"</li>
-            <li>"male and female teenagers above 17"</li>
-            <li>"males over 30"</li>
-            <li>"senior profiles from Germany"</li>
-            <li>"adults aged between 25 and 40"</li>
+            <li>&quot;young males&quot;</li>
+            <li>&quot;females above 30&quot;</li>
+            <li>&quot;people from angola&quot;</li>
+            <li>&quot;adult males from kenya&quot;</li>
+            <li>&quot;male and female teenagers above 17&quot;</li>
+            <li>&quot;males over 30&quot;</li>
+            <li>&quot;senior profiles from Germany&quot;</li>
+            <li>&quot;adults aged between 25 and 40&quot;</li>
           </ul>
         </div>
       </div>
@@ -189,6 +196,9 @@ export default function SearchPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Country
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -210,6 +220,14 @@ export default function SearchPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {profile.country_id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <Link
+                        href={`/dashboard/profiles/${profile.id}`}
+                        className="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors">
+                        <Eye className="w-3 h-3 mr-1" />
+                        View
+                      </Link>
                     </td>
                   </tr>
                 ))}
