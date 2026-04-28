@@ -78,7 +78,7 @@ export async function logout(): Promise<{ status: string; message: string }> {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const response = await apiFetch(`/api/user/me`, {});
+  const response = await apiFetch(`/api/users/me`, {});
   if (!response.ok) {
     return null;
   }

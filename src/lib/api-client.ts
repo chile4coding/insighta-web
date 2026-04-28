@@ -1,13 +1,7 @@
 import { refreshToken } from "./api";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE || "http://185.200.244.215:9400/api";
-
-function redirectToLogin() {
-  if (typeof window !== "undefined") {
-    window.location.href = "/login";
-  }
-}
+  process.env.NEXT_PUBLIC_API_BASE || "http://185.200.244.215:9400";
 
 async function rawFetch(url: string, options: RequestInit): Promise<Response> {
   return fetch(`${API_BASE}${url}`, {
