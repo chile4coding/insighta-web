@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { searchProfiles, PaginatedResponse, Profile } from "../../../lib/api";
+import { searchProfiles, deleteProfile, PaginatedResponse, Profile } from "../../../lib/api";
 import Link from "next/link";
 import {
   Search,
@@ -11,10 +11,14 @@ import {
   ArrowUp,
   ArrowDown,
   Eye,
+  Trash2,
+  AlertTriangle,
+  X,
 } from "lucide-react";
 
 export default function SearchPage() {
   const { user, loading } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Profile[]>([]);
   const [pagination, setPagination] = useState<{
@@ -32,6 +36,11 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("created_at");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
+
+  // Delete modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [profileToDelete, setProfileToDelete] = useState<Profile | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const performSearch = async (searchQuery: string, url: string) => {
     if (!searchQuery.trim() && !url) return;
@@ -68,8 +77,35 @@ export default function SearchPage() {
   };
 
   const handlePageChange = (newPage: number, link: string) => {
-    console.log("this is the link: ", link);
     performSearch("", link);
+  };
+
+  const openDeleteModal = (profile: Profile) => {
+    setProfileToDelete(profile);
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setProfileToDelete(null);
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!profileToDelete) return;
+
+    try {
+      setDeleting(true);
+      await deleteProfile(profileToDelete.id);
+      closeDeleteModal();
+      // Refresh search results
+      performSearch(query, "");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to delete profile"
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (loading) {
@@ -129,11 +165,14 @@ export default function SearchPage() {
             <strong>Try these examples:</strong>
           </p>
           <ul className="list-disc list-inside mt-1 space-y-1">
-            <li>&quot;young males&quot;</li>
-            <li>&quot;females above 30&quot;</li>
-            <li>&quot;people from angola&quot;</li>
-            <li>&quot;adult males from kenya&quot;</li>
-            <li>&quot;male and female teenagers above 17&quot;</li>
+            <li>"young males"</li>
+            <li>"females above 30"</li>
+            <li>"people from angola"</li>
+            <li>"adult males from kenya"</li>
+            <li>"male and female teenagers above 17"</li>
+            <li>"males over 30"</li>
+            <li>"senior profiles from Germany"</li>
+            <li>"adults aged between 25 and 40"</li>
           </ul>
         </div>
       </div>
@@ -205,26 +244,36 @@ export default function SearchPage() {
                       {profile.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                      {profile.gender}
+                      {profile.gender || "Not specified"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {profile.age}
+                      {profile.age !== null ? profile.age : "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                        {profile.age_group}
+                        {profile.age_group || "Unclassified"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {profile.country_id}
+                      {profile.country_name || profile.country_id || "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <Link
-                        href={`/dashboard/profiles/${profile.id}`}
-                        className="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors">
-                        <Eye className="w-3 h-3 mr-1" />
-                        View
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/dashboard/profiles/${profile.id}`}
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors">
+                          <Eye className="w-3 h-3 mr-1" />
+                          View
+                        </Link>
+                        {isAdmin && (
+                          <button
+                            onClick={() => openDeleteModal(profile)}
+                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors">
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -266,14 +315,74 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* {!loadingSearch && results.length === 0 && query && !error && (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <Search className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500">
-            No results found for &quot;{query}&quot;
-          </p>
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && profileToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+          {/* Modal */}
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+                Delete Profile
+              </h2>
+              <button
+                onClick={closeDeleteModal}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Confirmation Message */}
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Are you sure you want to delete the profile for{" "}
+                <span className="font-semibold text-gray-900">
+                  {profileToDelete.name}
+                </span>
+                ? This action cannot be undone.
+              </p>
+
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                  {error}
+                </p>
+              )}
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={closeDeleteModal}
+                  disabled={deleting}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50">
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteProfile}
+                  disabled={deleting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+                  {deleting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 }
