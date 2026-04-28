@@ -60,6 +60,8 @@ export default function AccountPage() {
                     src={user.avatarUrl}
                     alt="User avatar"
                     className="w-8 h-8 rounded-full object-cover"
+                    width={5}
+                    height={5}
                   />
                 ) : (
                   <User className="w-8 h-8 text-blue-600" />

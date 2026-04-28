@@ -84,6 +84,8 @@ export default function Navbar() {
                       src={user.avatarUrl}
                       alt="User avatar"
                       className="w-5 h-5 rounded-full object-cover"
+                      width={5}
+                      height={5}
                     />
                   ) : (
                     <User className="w-5 h-5 text-gray-500" />
