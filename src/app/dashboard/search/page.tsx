@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { searchProfiles, deleteProfile, PaginatedResponse, Profile } from "../../../lib/api";
+import {
+  searchProfiles,
+  deleteProfile,
+  PaginatedResponse,
+  Profile,
+} from "../../../lib/api";
 import Link from "next/link";
 import {
   Search,
@@ -100,9 +105,7 @@ export default function SearchPage() {
       // Refresh search results
       performSearch(query, "");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to delete profile"
-      );
+      setError(err instanceof Error ? err.message : "Failed to delete profile");
     } finally {
       setDeleting(false);
     }
@@ -265,14 +268,6 @@ export default function SearchPage() {
                           <Eye className="w-3 h-3 mr-1" />
                           View
                         </Link>
-                        {isAdmin && (
-                          <button
-                            onClick={() => openDeleteModal(profile)}
-                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors">
-                            <Trash2 className="w-3 h-3 mr-1" />
-                            Delete
-                          </button>
-                        )}
                       </div>
                     </td>
                   </tr>
