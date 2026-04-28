@@ -125,6 +125,21 @@ export async function getProfile(id: string): Promise<Profile> {
   const data = await response.json();
   return data.data;
 }
+export async function deleteProfile(id: string): Promise<Profile> {
+  const response = await apiFetch(`/profiles/${id}`, {
+    method: "DELETE",
+    headers: {
+      "X-API-Version": "1",
+    },
+  });
+
+  if (!response.ok) {
+    throw Error(await response.text());
+  }
+
+  const data = await response.json();
+  return data.data;
+}
 export async function getDashboard(): Promise<DashboardStats> {
   const response = await apiFetch(`/dashboard/stats`, {
     headers: {
