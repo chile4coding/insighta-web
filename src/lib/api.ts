@@ -1,5 +1,5 @@
 export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE || "http://185.200.244.215:9400/api";
+  process.env.NEXT_PUBLIC_API_BASE || "http://185.200.244.215:9400";
 
 export interface Profile {
   id: string;
@@ -78,7 +78,7 @@ export async function logout(): Promise<{ status: string; message: string }> {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const response = await apiFetch(`/auth/me`, {});
+  const response = await apiFetch(`/api/user/me`, {});
   if (!response.ok) {
     return null;
   }
@@ -91,14 +91,13 @@ export async function getProfiles(
 ): Promise<PaginatedResponse<Profile>> {
   const queryParams = new URLSearchParams();
 
-  console.log("this here");
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       queryParams.append(key, value.toString());
     }
   });
 
-  const response = await apiFetch(`/profiles?${queryParams}`, {
+  const response = await apiFetch(`/api/profiles?${queryParams}`, {
     headers: {
       "X-API-Version": "1",
     },
@@ -112,7 +111,7 @@ export async function getProfiles(
 }
 
 export async function getProfile(id: string): Promise<Profile> {
-  const response = await apiFetch(`/profiles/${id}`, {
+  const response = await apiFetch(`/api/profiles/${id}`, {
     headers: {
       "X-API-Version": "1",
     },
@@ -126,7 +125,7 @@ export async function getProfile(id: string): Promise<Profile> {
   return data.data;
 }
 export async function deleteProfile(id: string): Promise<Profile> {
-  const response = await apiFetch(`/profiles/${id}`, {
+  const response = await apiFetch(`/api/profiles/${id}`, {
     method: "DELETE",
     headers: {
       "X-API-Version": "1",
@@ -141,7 +140,7 @@ export async function deleteProfile(id: string): Promise<Profile> {
   return data.data;
 }
 export async function getDashboard(): Promise<DashboardStats> {
-  const response = await apiFetch(`/dashboard/stats`, {
+  const response = await apiFetch(`/api/dashboard/stats`, {
     headers: {
       "X-API-Version": "1",
     },
@@ -159,13 +158,13 @@ export async function searchProfiles(
   query: string,
   url: string,
 ): Promise<PaginatedResponse<Profile>> {
-  let urlAndQuery = `/profiles/search?q=${encodeURIComponent(query)}`;
+  let urlAndQuery = `/api/profiles/search?q=${encodeURIComponent(query)}`;
   if (url) {
     urlAndQuery = url.replace("/api", "");
   }
 
   if (query) {
-    urlAndQuery = `/profiles/search?q=${encodeURIComponent(query)}`;
+    urlAndQuery = `/api/profiles/search?q=${encodeURIComponent(query)}`;
   }
   const response = await apiFetch(urlAndQuery, {
     headers: {
@@ -181,7 +180,7 @@ export async function searchProfiles(
 }
 
 export async function createProfile(name: string): Promise<Profile> {
-  const response = await apiFetch(`/profiles`, {
+  const response = await apiFetch(`/api/profiles`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -210,7 +209,7 @@ export async function exportProfiles(
   });
   queryParams.append("format", "csv");
 
-  const response = await apiFetch(`/profiles/export?${queryParams}`, {
+  const response = await apiFetch(`/api/profiles/export?${queryParams}`, {
     headers: {
       "X-API-Version": "1",
       "X-CSRF-Token": getCsrfToken() || "",
