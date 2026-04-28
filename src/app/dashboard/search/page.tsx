@@ -134,9 +134,6 @@ export default function SearchPage() {
             <li>&quot;people from angola&quot;</li>
             <li>&quot;adult males from kenya&quot;</li>
             <li>&quot;male and female teenagers above 17&quot;</li>
-            <li>&quot;males over 30&quot;</li>
-            <li>&quot;senior profiles from Germany&quot;</li>
-            <li>&quot;adults aged between 25 and 40&quot;</li>
           </ul>
         </div>
       </div>
