@@ -39,11 +39,11 @@ export default function AccountPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
         Account Settings
       </h1>
 
-      <div className="max-w-2xl">
+      <div className="max-w-2xl mx-auto">
         {/* Profile Card */}
         <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
           <div className="px-6 py-5 border-b border-gray-200">
