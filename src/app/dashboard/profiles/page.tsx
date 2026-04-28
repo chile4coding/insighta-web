@@ -147,16 +147,16 @@ export default function ProfilesPage() {
     }
   }, []);
 
-   const handlePageChange = useCallback(
-     (newPage: number) => {
-       if (newPage >= 1 && newPage <= totalPages) {
-         setPage(newPage);
-         pageRef.current = newPage;
-         loadProfiles();
-       }
-     },
-     [totalPages, loadProfiles],
-   );
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      if (newPage >= 1 && newPage <= totalPages) {
+        setPage(newPage);
+        pageRef.current = newPage;
+        loadProfiles();
+      }
+    },
+    [totalPages, loadProfiles],
+  );
 
   const openDeleteModal = useCallback((profile: Profile) => {
     setProfileToDelete(profile);
@@ -178,9 +178,7 @@ export default function ProfilesPage() {
       // Reload current page or adjust pagination
       loadProfiles();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to delete profile"
-      );
+      setError(err instanceof Error ? err.message : "Failed to delete profile");
     } finally {
       setDeleting(false);
     }
@@ -476,14 +474,6 @@ export default function ProfilesPage() {
                             <Eye className="w-3 h-3 mr-1" />
                             View
                           </Link>
-                          {isAdmin && (
-                            <button
-                              onClick={() => openDeleteModal(profile)}
-                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors">
-                              <Trash2 className="w-3 h-3 mr-1" />
-                              Delete
-                            </button>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -529,149 +519,149 @@ export default function ProfilesPage() {
         )}
       </div>
 
-       {/* Create Profile Modal */}
-       {showCreateModal && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center">
-           {/* Backdrop */}
-           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      {/* Create Profile Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
 
-           {/* Modal */}
-           <div
-             ref={modalRef}
-             className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200">
-             {/* Header */}
-             <div className="flex items-center justify-between mb-5">
-               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                 <UserPlus className="w-5 h-5 text-blue-600" />
-                 Create Profile
-               </h2>
-               <button
-                 onClick={handleCloseModal}
-                 className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                 <X className="w-5 h-5" />
-               </button>
-             </div>
+          {/* Modal */}
+          <div
+            ref={modalRef}
+            className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-blue-600" />
+                Create Profile
+              </h2>
+              <button
+                onClick={handleCloseModal}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-             {/* Form */}
-             <form onSubmit={handleCreateProfile} className="space-y-4">
-               <div>
-                 <label
-                   htmlFor="profile-name"
-                   className="block text-sm font-medium text-gray-700 mb-1">
-                   Name <span className="text-red-500">*</span>
-                 </label>
-                 <input
-                   id="profile-name"
-                   type="text"
-                   value={createName}
-                   onChange={(e) => setCreateName(e.target.value)}
-                   placeholder="Enter full name"
-                   autoFocus
-                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                 />
-               </div>
+            {/* Form */}
+            <form onSubmit={handleCreateProfile} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="profile-name"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="profile-name"
+                  type="text"
+                  value={createName}
+                  onChange={(e) => setCreateName(e.target.value)}
+                  placeholder="Enter full name"
+                  autoFocus
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+              </div>
 
-               {createError && (
-                 <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-                   {createError}
-                 </p>
-               )}
+              {createError && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                  {createError}
+                </p>
+              )}
 
-               {/* Actions */}
-               <div className="flex justify-end gap-2 pt-1">
-                 <button
-                   type="button"
-                   onClick={handleCloseModal}
-                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                   Cancel
-                 </button>
-                 <button
-                   type="submit"
-                   disabled={creating}
-                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
-                   {creating ? (
-                     <>
-                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                       Creating...
-                     </>
-                   ) : (
-                     "Create Profile"
-                   )}
-                 </button>
-               </div>
-             </form>
-           </div>
-         </div>
-       )}
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+                  {creating ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Profile"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
-       {/* Delete Confirmation Modal */}
-       {showDeleteModal && profileToDelete && (
-         <div className="fixed inset-0 z-50 flex items-center justify-center">
-           {/* Backdrop */}
-           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && profileToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
 
-           {/* Modal */}
-           <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200">
-             {/* Header */}
-             <div className="flex items-center justify-between mb-5">
-               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                 <AlertTriangle className="w-5 h-5 text-red-600" />
-                 Delete Profile
-               </h2>
-               <button
-                 onClick={closeDeleteModal}
-                 className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                 <X className="w-5 h-5" />
-               </button>
-             </div>
+          {/* Modal */}
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+                Delete Profile
+              </h2>
+              <button
+                onClick={closeDeleteModal}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-             {/* Confirmation Message */}
-             <div className="space-y-4">
-               <p className="text-sm text-gray-600">
-                 Are you sure you want to delete the profile for{" "}
-                 <span className="font-semibold text-gray-900">
-                   {profileToDelete.name}
-                 </span>
-                 ? This action cannot be undone.
-               </p>
+            {/* Confirmation Message */}
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Are you sure you want to delete the profile for{" "}
+                <span className="font-semibold text-gray-900">
+                  {profileToDelete.name}
+                </span>
+                ? This action cannot be undone.
+              </p>
 
-               {error && (
-                 <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-                   {error}
-                 </p>
-               )}
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                  {error}
+                </p>
+              )}
 
-               {/* Actions */}
-               <div className="flex justify-end gap-2 pt-1">
-                 <button
-                   type="button"
-                   onClick={closeDeleteModal}
-                   disabled={deleting}
-                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50">
-                   Cancel
-                 </button>
-                 <button
-                   type="button"
-                   onClick={handleDeleteProfile}
-                   disabled={deleting}
-                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
-                   {deleting ? (
-                     <>
-                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                       Deleting...
-                     </>
-                   ) : (
-                     <>
-                       <Trash2 className="w-4 h-4" />
-                       Delete
-                     </>
-                   )}
-                 </button>
-               </div>
-             </div>
-           </div>
-         </div>
-       )}
-     </div>
-   );
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={closeDeleteModal}
+                  disabled={deleting}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50">
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteProfile}
+                  disabled={deleting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
+                  {deleting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
