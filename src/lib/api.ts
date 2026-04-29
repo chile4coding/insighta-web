@@ -78,7 +78,11 @@ export async function logout(): Promise<{ status: string; message: string }> {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const response = await apiFetch(`/api/users/me`, {});
+  const response = await apiFetch(`/api/users/me`, {
+    headers: {
+      "X-API-Version": "1",
+    },
+  });
   if (!response.ok) {
     return null;
   }
