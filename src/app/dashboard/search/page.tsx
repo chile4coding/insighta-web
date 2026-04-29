@@ -168,14 +168,14 @@ export default function SearchPage() {
             <strong>Try these examples:</strong>
           </p>
           <ul className="list-disc list-inside mt-1 space-y-1">
-            <li>"young males"</li>
-            <li>"females above 30"</li>
-            <li>"people from angola"</li>
-            <li>"adult males from kenya"</li>
-            <li>"male and female teenagers above 17"</li>
-            <li>"males over 30"</li>
-            <li>"senior profiles from Germany"</li>
-            <li>"adults aged between 25 and 40"</li>
+            <li>&quot;young males&quot;</li>
+            <li>&quot;females above 30&quot;</li>
+            <li>&quot;people from angola&quot;</li>
+            <li>&quot;adult males from kenya&quot;</li>
+            <li>&quot;male and female teenagers above 17&quot;</li>
+            <li>&quot;males over 30&quot;</li>
+            <li>&quot;senior profiles from Germany&quot;</li>
+            <li>&quot;adults aged between 25 and 40&quot;</li>
           </ul>
         </div>
       </div>
