@@ -164,12 +164,13 @@ export async function searchProfiles(
 ): Promise<PaginatedResponse<Profile>> {
   let urlAndQuery = `/api/profiles/search?q=${encodeURIComponent(query)}`;
   if (url) {
-    urlAndQuery = url.replace("/api", "");
+    urlAndQuery = url;
   }
 
   if (query) {
     urlAndQuery = `/api/profiles/search?q=${encodeURIComponent(query)}`;
   }
+
   const response = await apiFetch(urlAndQuery, {
     headers: {
       "X-API-Version": "1",
